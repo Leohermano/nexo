@@ -1,0 +1,231 @@
+:root {
+  --azul: #3D5CF5;
+  --roxo: #8B3FE4;
+  --gradiente: linear-gradient(135deg, var(--azul), var(--roxo));
+  --preto: #0A0A0F;
+  --preto-suave: #14141C;
+  --preto-mais-suave: #1B1B24;
+  --borda: #26262F;
+  --texto-claro: #F4F4F6;
+  --texto-suave: #9A98A8;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: var(--preto);
+  color: var(--texto-claro);
+}
+h1, h2, h3 { font-family: Georgia, serif; margin: 0 0 8px; }
+.hidden { display: none !important; }
+.texto-suave { color: var(--texto-suave); font-size: 14px; }
+.rotulo { font-size: 12px; text-transform: uppercase; color: var(--texto-suave); margin: 0 0 8px; }
+
+/* ---------- Botões ---------- */
+.btn {
+  display: inline-block;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+}
+.btn-laranja { background: var(--gradiente); color: #fff; }
+.btn-fantasma { background: transparent; border: 1px solid #3A3A46; color: #fff; }
+.link { background: none; border: none; color: var(--azul); font-weight: bold; cursor: pointer; padding: 0; }
+
+/* ---------- Telas de login/cadastro ---------- */
+.tela { min-height: 100vh; }
+#tela-login, #tela-cadastro {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: var(--preto);
+}
+.caixa-login {
+  width: 100%;
+  max-width: 360px;
+  background: var(--preto-suave);
+  border: 1px solid #26262F;
+  border-radius: 16px;
+  padding: 28px;
+  text-align: center;
+}
+.logo-imagem {
+  width: 100%;
+  max-width: 220px;
+  height: auto;
+  margin: 0 auto 8px;
+  display: block;
+}
+.logo { font-size: 26px; color: #fff; }
+.marca-topo { display: flex; align-items: center; gap: 8px; }
+.icone-topo {
+  width: 50px;
+  height: 50px;
+  max-width: 50px;
+  max-height: 50px;
+  object-fit: contain;
+  display: block;
+  flex-shrink: 0;
+}
+.logo-pequeno {
+  font-size: 20px;
+  background: var(--gradiente);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-weight: bold;
+}
+.subtitulo { margin-bottom: 20px; color: #9A98A8; }
+.troca-modo { margin-top: 18px; font-size: 14px; color: #9A98A8; }
+
+form label {
+  display: block;
+  text-align: left;
+  font-size: 12px;
+  text-transform: uppercase;
+  color: #9A98A8;
+  margin-bottom: 14px;
+}
+form input, form select {
+  display: block;
+  width: 100%;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #2E2E38;
+  background: #1B1B24;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+}
+form input::placeholder { color: #6B6A78; }
+
+/* ---------- Topo do app ---------- */
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--borda);
+  background: var(--preto-suave);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.menu { display: flex; gap: 6px; flex-wrap: wrap; }
+.menu-item {
+  border: none;
+  background: transparent;
+  padding: 8px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--texto-suave);
+}
+.menu-item.ativo { background: var(--preto-mais-suave); color: var(--azul); font-weight: bold; }
+
+.conteudo { max-width: 800px; margin: 0 auto; padding: 24px; }
+
+/* ---------- Cartões ---------- */
+.cartao {
+  background: var(--preto-suave);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 14px;
+}
+.cartao-escuro { background: var(--gradiente); color: #fff; }
+.cartao-escuro .rotulo { color: rgba(255,255,255,0.75); }
+.cartoes-resumo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.numero-grande { font-size: 30px; font-weight: bold; margin: 4px 0; }
+
+.formulario-cartao {
+  background: var(--preto-suave);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+.linha-form { margin-bottom: 10px; }
+.duas-colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ---------- Lista de tarefas ---------- */
+.lista-tarefas { list-style: none; padding: 0; margin: 0; }
+.item-tarefa {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--preto-suave);
+  border: 1px solid var(--borda);
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  border-left: 4px solid var(--cor-cat, #D9491F);
+}
+.item-tarefa.concluida { opacity: 0.55; }
+.item-tarefa.concluida .titulo-tarefa { text-decoration: line-through; }
+.item-tarefa input[type="checkbox"] { width: 18px; height: 18px; margin-top: 2px; }
+.corpo-tarefa { flex: 1; }
+.titulo-tarefa { font-weight: bold; font-size: 14px; }
+.meta-tarefa { font-size: 12px; color: var(--texto-suave); margin-top: 2px; }
+.btn-excluir {
+  border: none;
+  background: none;
+  color: var(--roxo);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* ---------- Hábitos ---------- */
+.grade-habitos {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.cartao-habito {
+  background: var(--preto-suave);
+  border: 1px solid var(--borda);
+  border-radius: 14px;
+  padding: 14px;
+}
+.cabecalho-habito { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.nome-habito { font-weight: bold; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+.bolinha-cor { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.linha-acoes-habito { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.btn-marcar {
+  border: none;
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  background: var(--preto-mais-suave);
+  color: var(--texto-claro);
+}
+.btn-marcar.feito { color: #fff; background: var(--gradiente) !important; }
+.streak-texto { font-size: 12px; color: var(--roxo); font-weight: bold; }
+
+/* ---------- Toggles / lembretes ---------- */
+.linha-toggle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  font-size: 14px;
+}
+.linha-toggle input[type="checkbox"] { width: 18px; height: 18px; }
+
+/* ---------- Responsivo ---------- */
+@media (max-width: 640px) {
+  .cartoes-resumo, .grade-habitos, .duas-colunas { grid-template-columns: 1fr; }
+  .topo { flex-direction: column; align-items: flex-start; }
+}
