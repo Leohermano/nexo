@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nexo — organize sua rotina</title>
-<link rel="icon" href="img/nexo-icone.png" type = logo>
+<link rel="icon" href="/img/nexo-icone.png" type = logo>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -12,7 +12,7 @@
 </head>
 <body>
 
-  <!-- TELA DE LOGIN -->
+  <!-- ===================== TELA DE LOGIN ===================== -->
   <section id="tela-login" class="tela">
     <div class="caixa-login">
       <img src="/img/nexo-icone.png" alt="Nexo" class="logo-imagem">
@@ -35,7 +35,7 @@
     </div>
   </section>
 
-  <!--TELA DE CADASTRO  -->
+  <!-- ===================== TELA DE CADASTRO ===================== -->
   <section id="tela-cadastro" class="tela hidden">
     <div class="caixa-login">
       <img src="/img/nexo-icone.png" alt="Nexo" class="logo-imagem">
@@ -61,7 +61,7 @@
     </div>
   </section>
 
-  <!-- APP (após login) -->
+  <!-- ===================== APP (após login) ===================== -->
   <section id="tela-app" class="tela hidden">
 
     <!-- Menu superior -->
@@ -81,7 +81,7 @@
 
     <main class="conteudo">
 
-      <!-- ABA: DASHBOARD -->
+      <!-- ---------- ABA: DASHBOARD ---------- -->
       <div id="aba-dashboard" class="aba">
         <h2 id="saudacao">Olá!</h2>
         <p class="texto-suave">Aqui está um resumo da sua rotina.</p>
@@ -103,9 +103,15 @@
         <ul id="lista-tarefas-hoje" class="lista-tarefas"></ul>
       </div>
 
-      <!--ABA: TAREFAS-->
+      <!-- ---------- ABA: TAREFAS ---------- -->
       <div id="aba-tarefas" class="aba hidden">
         <h2>Tarefas</h2>
+
+        <div class="navegador-data">
+          <button type="button" id="btn-dia-anterior" class="btn-nav-dia" aria-label="Dia anterior">‹</button>
+          <span id="rotulo-dia-tarefas" class="rotulo-dia">Hoje</span>
+          <button type="button" id="btn-dia-proximo" class="btn-nav-dia" aria-label="Próximo dia">›</button>
+        </div>
 
         <form id="form-nova-tarefa" class="formulario-cartao">
           <div class="linha-form">
@@ -139,13 +145,17 @@
               </select>
             </label>
           </div>
+          <label class="linha-toggle linha-toggle-fixa">
+            <span>Repetir todos os dias (tarefa fixa)</span>
+            <input type="checkbox" id="tarefa-fixa">
+          </label>
           <button type="submit" class="btn btn-laranja">Adicionar tarefa</button>
         </form>
 
         <ul id="lista-todas-tarefas" class="lista-tarefas"></ul>
       </div>
 
-      <!-- ABA: HÁBITOS -->
+      <!-- ---------- ABA: HÁBITOS ---------- -->
       <div id="aba-habitos" class="aba hidden">
         <h2>Hábitos</h2>
 
@@ -170,7 +180,7 @@
         <div id="lista-habitos" class="grade-habitos"></div>
       </div>
 
-      <!-- ABA: LEMBRETES -->
+      <!-- ---------- ABA: LEMBRETES ---------- -->
       <div id="aba-lembretes" class="aba hidden">
         <h2>Lembretes</h2>
 
@@ -205,7 +215,7 @@
         <p class="texto-suave">O envio real de lembretes será ativado quando o backend estiver conectado.</p>
       </div>
 
-      <!-- ABA: PERFIL -->
+      <!-- ---------- ABA: PERFIL ---------- -->
       <div id="aba-perfil" class="aba hidden">
         <h2>Perfil</h2>
 
