@@ -7,8 +7,8 @@
   --texto: #EDE8E4;
   --texto-suave: #948E9C;
 
-  --ambar: #E3A23C;
-  --ambar-forte: #F0B75B;
+  --ambar: rgb(129, 2, 129);
+  --ambar-forte: rgb(53, 1, 73);
   --ambar-tinta: rgba(227, 162, 60, 0.14);
 
   --verde: #4FA79E;
