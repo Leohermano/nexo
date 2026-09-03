@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexo — organize sua rotina</title>
+<link rel="icon" href="img/nexo-icone.png" type = logo>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+  <!-- TELA DE LOGIN -->
+  <section id="tela-login" class="tela">
+    <div class="caixa-login">
+      <img src="/img/nexo-icone.png" alt="Nexo" class="logo-imagem">
+      <p class="subtitulo">Sua rotina, em um único lugar.</p>
+
+      <form id="form-login">
+        <label>E-mail
+          <input type="email" id="login-email" placeholder="voce@email.com" required>
+        </label>
+        <label>Senha
+          <input type="password" id="login-senha" placeholder="••••••••" required>
+        </label>
+        <button type="submit" class="btn btn-laranja">Entrar</button>
+      </form>
+
+      <p class="troca-modo">
+        Ainda não tem conta?
+        <button id="btn-ir-cadastro" class="link">Cadastre-se</button>
+      </p>
+    </div>
+  </section>
+
+  <!--TELA DE CADASTRO  -->
+  <section id="tela-cadastro" class="tela hidden">
+    <div class="caixa-login">
+      <img src="/img/nexo-icone.png" alt="Nexo" class="logo-imagem">
+      <p class="subtitulo">Crie sua conta e organize seu dia.</p>
+
+      <form id="form-cadastro">
+        <label>Nome
+          <input type="text" id="cadastro-nome" placeholder="Seu nome" required>
+        </label>
+        <label>E-mail
+          <input type="email" id="cadastro-email" placeholder="voce@email.com" required>
+        </label>
+        <label>Senha
+          <input type="password" id="cadastro-senha" placeholder="••••••••" required>
+        </label>
+        <button type="submit" class="btn btn-laranja">Criar conta</button>
+      </form>
+
+      <p class="troca-modo">
+        Já tem uma conta?
+        <button id="btn-ir-login" class="link">Entrar</button>
+      </p>
+    </div>
+  </section>
+
+  <!-- APP (após login) -->
+  <section id="tela-app" class="tela hidden">
+
+    <!-- Menu superior -->
+    <header class="topo">
+              <span class="marca-topo">
+        <img src="/img/nexo-icone.png" alt="Nexo" class="icone-topo">
+        <span class="logo logo-pequeno"></span>
+      </span>
+        <button class="menu-item ativo" data-aba="dashboard">Início</button>
+        <button class="menu-item" data-aba="tarefas">Tarefas</button>
+        <button class="menu-item" data-aba="habitos">Hábitos</button>
+        <button class="menu-item" data-aba="lembretes">Lembretes</button>
+        <button class="menu-item" data-aba="perfil">Perfil</button>
+      </nav>
+      <button id="btn-sair" class="btn btn-fantasma">Sair</button>
+    </header>
+
+    <main class="conteudo">
+
+      <!-- ABA: DASHBOARD -->
+      <div id="aba-dashboard" class="aba">
+        <h2 id="saudacao">Olá!</h2>
+        <p class="texto-suave">Aqui está um resumo da sua rotina.</p>
+
+        <div class="cartoes-resumo">
+          <div class="cartao cartao-escuro">
+            <p class="rotulo">Tarefas de hoje</p>
+            <p class="numero-grande" id="resumo-tarefas-hoje">0%</p>
+            <p class="texto-suave" id="resumo-tarefas-detalhe">0/0 concluídas</p>
+          </div>
+          <div class="cartao">
+            <p class="rotulo">Hábitos ativos</p>
+            <p class="numero-grande" id="resumo-total-habitos">0</p>
+            <p class="texto-suave">hábitos sendo rastreados</p>
+          </div>
+        </div>
+
+        <h3>Tarefas de hoje</h3>
+        <ul id="lista-tarefas-hoje" class="lista-tarefas"></ul>
+      </div>
+
+      <!--ABA: TAREFAS-->
+      <div id="aba-tarefas" class="aba hidden">
+        <h2>Tarefas</h2>
+
+        <form id="form-nova-tarefa" class="formulario-cartao">
+          <div class="linha-form">
+            <label>Título
+              <input type="text" id="tarefa-titulo" placeholder="Ex: Reunião com o time" required>
+            </label>
+          </div>
+          <div class="linha-form duas-colunas">
+            <label>Data
+              <input type="date" id="tarefa-data" required>
+            </label>
+            <label>Horário
+              <input type="time" id="tarefa-hora" value="09:00" required>
+            </label>
+          </div>
+          <div class="linha-form duas-colunas">
+            <label>Categoria
+              <select id="tarefa-categoria">
+                <option value="ember">Trabalho</option>
+                <option value="moss">Saúde</option>
+                <option value="honey">Casa</option>
+                <option value="indigo">Pessoal</option>
+                <option value="plum">Família</option>
+              </select>
+            </label>
+            <label>Prioridade
+              <select id="tarefa-prioridade">
+                <option value="alta">Alta</option>
+                <option value="media" selected>Média</option>
+                <option value="baixa">Baixa</option>
+              </select>
+            </label>
+          </div>
+          <button type="submit" class="btn btn-laranja">Adicionar tarefa</button>
+        </form>
+
+        <ul id="lista-todas-tarefas" class="lista-tarefas"></ul>
+      </div>
+
+      <!-- ABA: HÁBITOS -->
+      <div id="aba-habitos" class="aba hidden">
+        <h2>Hábitos</h2>
+
+        <form id="form-novo-habito" class="formulario-cartao">
+          <div class="linha-form duas-colunas">
+            <label>Nome do hábito
+              <input type="text" id="habito-nome" placeholder="Ex: Beber 2L de água" required>
+            </label>
+            <label>Cor
+              <select id="habito-cor">
+                <option value="moss">Verde</option>
+                <option value="ember">Laranja</option>
+                <option value="indigo">Azul</option>
+                <option value="honey">Amarelo</option>
+                <option value="plum">Roxo</option>
+              </select>
+            </label>
+          </div>
+          <button type="submit" class="btn btn-laranja">Adicionar hábito</button>
+        </form>
+
+        <div id="lista-habitos" class="grade-habitos"></div>
+      </div>
+
+      <!-- ABA: LEMBRETES -->
+      <div id="aba-lembretes" class="aba hidden">
+        <h2>Lembretes</h2>
+
+        <div class="cartao">
+          <p class="rotulo">Quando notificar</p>
+          <label class="linha-toggle">
+            <span>10 minutos antes</span>
+            <input type="checkbox" id="notif-10min" checked>
+          </label>
+          <label class="linha-toggle">
+            <span>1 hora antes</span>
+            <input type="checkbox" id="notif-1h">
+          </label>
+          <label class="linha-toggle">
+            <span>No horário</span>
+            <input type="checkbox" id="notif-horario" checked>
+          </label>
+        </div>
+
+        <div class="cartao">
+          <p class="rotulo">Canais</p>
+          <label class="linha-toggle">
+            <span>Notificação push</span>
+            <input type="checkbox" id="notif-push" checked>
+          </label>
+          <label class="linha-toggle">
+            <span>E-mail</span>
+            <input type="checkbox" id="notif-email">
+          </label>
+        </div>
+
+        <p class="texto-suave">O envio real de lembretes será ativado quando o backend estiver conectado.</p>
+      </div>
+
+      <!-- ABA: PERFIL -->
+      <div id="aba-perfil" class="aba hidden">
+        <h2>Perfil</h2>
+
+        <form id="form-perfil" class="formulario-cartao">
+          <label>Nome
+            <input type="text" id="perfil-nome" value="Leo">
+          </label>
+          <label>E-mail
+            <input type="email" id="perfil-email" value="lhmuniz7@email.com">
+          </label>
+          <label>Fuso horário
+            <select id="perfil-fuso">
+              <option>América/São Paulo (GMT-3)</option>
+              <option>América/Fortaleza (GMT-3)</option>
+              <option>América/Manaus (GMT-4)</option>
+              <option>Europa/Lisboa (GMT+0)</option>
+            </select>
+          </label>
+          <button type="submit" class="btn btn-laranja">Salvar alterações</button>
+        </form>
+      </div>
+
+    </main>
+  </section>
+
+<script src="/js/script.js"></script>
+</body>
+</html>
