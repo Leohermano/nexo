@@ -1,14 +1,14 @@
 // Cores disponíveis para categorias e hábitos
 const CORES = {
-  ember: "#D9491F",
-  moss: "#4E6E52",
-  honey: "#C98A22",
-  indigo: "#3C3A5C",
-  plum: "#8B5E83",
+  ember: "#E3A23C",
+  moss: "#4FA79E",
+  honey: "#C9A24E",
+  indigo: "#8B8FC4",
+  plum: "#C97B95",
 };
 
 // Cor de cada nível de prioridade
-const CORES_PRIORIDADE = { alta: "#D9491F", media: "#C98A22", baixa: "#4E6E52" };
+const CORES_PRIORIDADE = { alta: "#D97B4F", media: "#E3A23C", baixa: "#6E8F8B" };
 const NOMES_PRIORIDADE = { alta: "Alta", media: "Média", baixa: "Baixa" };
 
 // "Banco de dados" em memória
@@ -134,8 +134,8 @@ function criarItemTarefa(tarefa) {
   corpo.innerHTML = `
     <div class="titulo-tarefa">${escaparTexto(tarefa.titulo)}</div>
     <div class="meta-tarefa">
-      ${tarefa.data} às ${tarefa.hora} ·
-      <span style="color:${CORES_PRIORIDADE[tarefa.prioridade]}">${NOMES_PRIORIDADE[tarefa.prioridade]}</span>
+      <span>${tarefa.data} às ${tarefa.hora}</span>
+      <span class="selo-prioridade" style="color:${CORES_PRIORIDADE[tarefa.prioridade]};background:${CORES_PRIORIDADE[tarefa.prioridade]}22">${NOMES_PRIORIDADE[tarefa.prioridade]}</span>
     </div>
   `;
 
@@ -228,7 +228,7 @@ function criarCartaoHabito(habito) {
       <button class="btn-excluir" data-acao="excluir-habito">Excluir</button>
     </div>
     <div class="linha-acoes-habito">
-      <button class="btn-marcar ${feitoHoje ? "feito" : ""}" style="${feitoHoje ? `background:${CORES[habito.cor]}` : ""}" data-acao="marcar-habito">
+      <button class="btn-marcar ${feitoHoje ? "feito" : ""}" data-acao="marcar-habito">
         ${feitoHoje ? "✓ Feito hoje" : "Marcar hoje"}
       </button>
       <span class="streak-texto">🔥 ${streak} dia${streak === 1 ? "" : "s"} seguidos</span>
@@ -251,6 +251,7 @@ function renderizarHabitos() {
   }
   habitos.forEach((habito) => lista.appendChild(criarCartaoHabito(habito)));
 }
+
 
 /* DASHBOARD (resumo)                                    */
 function renderizarDashboard() {
@@ -280,7 +281,6 @@ document.getElementById("form-perfil").addEventListener("submit", (evento) => {
   document.getElementById("saudacao").textContent = "Olá, " + nome.split(" ")[0] + "!";
   alert("Perfil atualizado!");
 });
-
 
 /* Função auxiliar: evitar HTML malicioso em textos      */
 function escaparTexto(texto) {
