@@ -1,15 +1,7 @@
-/* ===================================================
-   NEXO - script do front
-   Fala com a Nexo API (ASP.NET Core) via fetch.
-   Só o token de sessão fica no navegador (localStorage);
-   tarefas e hábitos moram no banco, do lado do servidor.
-=================================================== */
-
-// Se a API estiver rodando em outro endereço/porta, mude aqui.
-const API_BASE_URL = "http://localhost:5000/api";
 
 const CHAVE_TOKEN = "nexo_token";
 const CHAVE_USUARIO = "nexo_usuario";
+const CHAVE_BANCO = "nexo_banco_local";
 
 // Cores usadas só para desenhar categorias/prioridades no front
 const CORES = {
@@ -26,42 +18,218 @@ const NOMES_PRIORIDADE = { alta: "Alta", media: "Média", baixa: "Baixa" };
 let dataSelecionadaTarefas = dataDeHoje();
 
 /* --------------------------------------------------- */
-/* Comunicação com a API                                */
+/* "API" local (sem back-end por enquanto)               */
 /* --------------------------------------------------- */
+
+// Mantém a mesma assinatura de antes (caminho + opções com
+// method/body), só que resolve tudo localmente, sem rede.
 async function chamarApi(caminho, opcoes = {}) {
-  const cabecalhos = { "Content-Type": "application/json", ...(opcoes.headers || {}) };
+  await esperarUmPouco(120); // simula uma latência de rede pequena
+
+  const metodo = (opcoes.method || "GET").toUpperCase();
+  const corpo = opcoes.body ? JSON.parse(opcoes.body) : null;
   const token = localStorage.getItem(CHAVE_TOKEN);
-  if (token) cabecalhos["Authorization"] = "Bearer " + token;
 
-  let resposta;
   try {
-    resposta = await fetch(API_BASE_URL + caminho, { ...opcoes, headers: cabecalhos });
-  } catch (erroDeRede) {
-    throw new Error("Não foi possível falar com o servidor. Ele está rodando em " + API_BASE_URL + "?");
+    return processarRotaLocal(metodo, caminho, corpo, token);
+  } catch (erro) {
+    if (erro.status === 401) {
+      sair();
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
+    throw new Error(erro.message || "Erro ao comunicar com o servidor.");
   }
+}
 
-  if (resposta.status === 401) {
-    sair();
-    throw new Error("Sessão expirada. Faça login novamente.");
-  }
-
-  if (!resposta.ok) {
-    let mensagem = "Erro ao comunicar com o servidor (" + resposta.status + ").";
-    try {
-      const corpo = await resposta.json();
-      if (corpo?.mensagem) mensagem = corpo.mensagem;
-      else if (corpo?.errors) mensagem = Object.values(corpo.errors).flat().join(" ");
-    } catch { /* corpo vazio, mantém a mensagem padrão */ }
-    throw new Error(mensagem);
-  }
-
-  if (resposta.status === 204) return null;
-  return resposta.json();
+function esperarUmPouco(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function salvarSessao(token, usuario) {
   localStorage.setItem(CHAVE_TOKEN, token);
   localStorage.setItem(CHAVE_USUARIO, JSON.stringify(usuario));
+}
+
+/* --------------------------------------------------- */
+/* Banco de dados falso (guardado no localStorage)       */
+/* --------------------------------------------------- */
+function carregarBanco() {
+  const bruto = localStorage.getItem(CHAVE_BANCO);
+  if (!bruto) return { usuarios: [], tarefas: [], habitos: [], proximoId: 1 };
+  return JSON.parse(bruto);
+}
+function salvarBanco(banco) {
+  localStorage.setItem(CHAVE_BANCO, JSON.stringify(banco));
+}
+function erroApi(status, mensagem) {
+  const erro = new Error(mensagem);
+  erro.status = status;
+  return erro;
+}
+function obterUsuarioLogado(banco, token) {
+  if (!token) throw erroApi(401, "Não autenticado.");
+  const usuario = banco.usuarios.find((u) => u.token === token);
+  if (!usuario) throw erroApi(401, "Sessão inválida.");
+  return usuario;
+}
+function calcularStreak(marcacoes) {
+  let streak = 0;
+  let cursor = dataDeHoje();
+  const marcadas = new Set(marcacoes);
+  while (marcadas.has(cursor)) {
+    streak++;
+    cursor = deslocarData(cursor, -1);
+  }
+  return streak;
+}
+
+function processarRotaLocal(metodo, caminhoCompleto, corpo, token) {
+  const [rota, querystring] = caminhoCompleto.split("?");
+  const parametros = new URLSearchParams(querystring || "");
+  const banco = carregarBanco();
+
+  /* ---------- AUTENTICAÇÃO ---------- */
+  if (rota === "/auth/registrar" && metodo === "POST") {
+    if (banco.usuarios.some((u) => u.email === corpo.email)) {
+      throw erroApi(400, "Já existe uma conta com este e-mail.");
+    }
+    const usuario = {
+      id: banco.proximoId++,
+      nome: corpo.nome,
+      email: corpo.email,
+      senha: corpo.senha,
+      token: "local-" + Math.random().toString(36).slice(2),
+    };
+    banco.usuarios.push(usuario);
+    salvarBanco(banco);
+    return { token: usuario.token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email } };
+  }
+
+  if (rota === "/auth/login" && metodo === "POST") {
+    const usuario = banco.usuarios.find((u) => u.email === corpo.email && u.senha === corpo.senha);
+    if (!usuario) throw erroApi(400, "E-mail ou senha incorretos.");
+    usuario.token = "local-" + Math.random().toString(36).slice(2);
+    salvarBanco(banco);
+    return { token: usuario.token, usuario: { id: usuario.id, nome: usuario.nome, email: usuario.email } };
+  }
+
+  // Todas as rotas abaixo exigem estar logado
+  const usuarioAtual = obterUsuarioLogado(banco, token);
+
+  /* ---------- TAREFAS ---------- */
+  if (rota === "/tarefas" && metodo === "GET") {
+    const data = parametros.get("data");
+    return banco.tarefas
+      .filter((t) => t.usuarioId === usuarioAtual.id && (t.fixa || t.data === data))
+      .map((t) => ({
+        id: t.id, titulo: t.titulo, data: t.data, hora: t.hora,
+        categoria: t.categoria, prioridade: t.prioridade, fixa: t.fixa,
+        concluida: t.concluidasEm.includes(data),
+      }));
+  }
+
+  if (rota === "/tarefas" && metodo === "POST") {
+    const tarefa = {
+      id: banco.proximoId++,
+      usuarioId: usuarioAtual.id,
+      titulo: corpo.titulo,
+      data: corpo.data,
+      hora: corpo.hora,
+      categoria: corpo.categoria,
+      prioridade: corpo.prioridade,
+      fixa: !!corpo.fixa,
+      concluidasEm: [],
+    };
+    banco.tarefas.push(tarefa);
+    salvarBanco(banco);
+    return tarefa;
+  }
+
+  let combinacao = rota.match(/^\/tarefas\/(\d+)\/concluir$/);
+  if (combinacao && metodo === "PATCH") {
+    const id = Number(combinacao[1]);
+    const data = parametros.get("data");
+    const tarefa = banco.tarefas.find((t) => t.id === id && t.usuarioId === usuarioAtual.id);
+    if (!tarefa) throw erroApi(404, "Tarefa não encontrada.");
+    const indice = tarefa.concluidasEm.indexOf(data);
+    if (indice >= 0) tarefa.concluidasEm.splice(indice, 1);
+    else tarefa.concluidasEm.push(data);
+    salvarBanco(banco);
+    return null;
+  }
+
+  combinacao = rota.match(/^\/tarefas\/(\d+)$/);
+  if (combinacao && metodo === "DELETE") {
+    const id = Number(combinacao[1]);
+    banco.tarefas = banco.tarefas.filter((t) => !(t.id === id && t.usuarioId === usuarioAtual.id));
+    salvarBanco(banco);
+    return null;
+  }
+
+  /* ---------- HÁBITOS ---------- */
+  if (rota === "/habitos" && metodo === "GET") {
+    const hoje = dataDeHoje();
+    return banco.habitos
+      .filter((h) => h.usuarioId === usuarioAtual.id)
+      .map((h) => ({
+        id: h.id, nome: h.nome, cor: h.cor,
+        feitoHoje: h.marcacoes.includes(hoje),
+        streak: calcularStreak(h.marcacoes),
+      }));
+  }
+
+  if (rota === "/habitos" && metodo === "POST") {
+    const habito = {
+      id: banco.proximoId++,
+      usuarioId: usuarioAtual.id,
+      nome: corpo.nome,
+      cor: corpo.cor,
+      marcacoes: [],
+    };
+    banco.habitos.push(habito);
+    salvarBanco(banco);
+    return habito;
+  }
+
+  combinacao = rota.match(/^\/habitos\/(\d+)\/marcar$/);
+  if (combinacao && metodo === "POST") {
+    const id = Number(combinacao[1]);
+    const habito = banco.habitos.find((h) => h.id === id && h.usuarioId === usuarioAtual.id);
+    if (!habito) throw erroApi(404, "Hábito não encontrado.");
+    const hoje = dataDeHoje();
+    const indice = habito.marcacoes.indexOf(hoje);
+    if (indice >= 0) habito.marcacoes.splice(indice, 1);
+    else habito.marcacoes.push(hoje);
+    salvarBanco(banco);
+    return null;
+  }
+
+  combinacao = rota.match(/^\/habitos\/(\d+)$/);
+  if (combinacao && metodo === "DELETE") {
+    const id = Number(combinacao[1]);
+    banco.habitos = banco.habitos.filter((h) => !(h.id === id && h.usuarioId === usuarioAtual.id));
+    salvarBanco(banco);
+    return null;
+  }
+
+  /* ---------- DASHBOARD ---------- */
+  if (rota === "/dashboard" && metodo === "GET") {
+    const hoje = dataDeHoje();
+    const tarefasHoje = banco.tarefas
+      .filter((t) => t.usuarioId === usuarioAtual.id && (t.fixa || t.data === hoje))
+      .map((t) => ({
+        id: t.id, titulo: t.titulo, data: t.data, hora: t.hora,
+        categoria: t.categoria, prioridade: t.prioridade, fixa: t.fixa,
+        concluida: t.concluidasEm.includes(hoje),
+      }));
+    const concluidasHoje = tarefasHoje.filter((t) => t.concluida).length;
+    const totalTarefasHoje = tarefasHoje.length;
+    const totalHabitos = banco.habitos.filter((h) => h.usuarioId === usuarioAtual.id).length;
+    const porcentagem = totalTarefasHoje === 0 ? 0 : Math.round((concluidasHoje / totalTarefasHoje) * 100);
+    return { resumo: { porcentagem, concluidasHoje, totalTarefasHoje, totalHabitos }, tarefasHoje };
+  }
+
+  throw erroApi(404, "Rota não encontrada: " + metodo + " " + rota);
 }
 
 /* --------------------------------------------------- */

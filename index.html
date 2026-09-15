@@ -70,6 +70,7 @@
         <img src="/img/nexo-icone.png" alt="Nexo" class="icone-topo">
         <span class="logo logo-pequeno"></span>
       </span>
+      <nav class="menu">
         <button class="menu-item ativo" data-aba="dashboard">Início</button>
         <button class="menu-item" data-aba="tarefas">Tarefas</button>
         <button class="menu-item" data-aba="habitos">Hábitos</button>
@@ -139,8 +140,18 @@
               </select>
             </label>
           </div>
+          <label class="linha-toggle linha-toggle-fixa">
+            <span>Repetir todos os dias</span>
+            <input type="checkbox" id="tarefa-fixa">
+          </label>
           <button type="submit" class="btn btn-laranja">Adicionar tarefa</button>
         </form>
+
+        <div class="navegador-data">
+          <button type="button" id="btn-dia-anterior" class="btn-nav-dia">‹</button>
+          <span id="rotulo-dia-tarefas" class="rotulo-dia">Hoje</span>
+          <button type="button" id="btn-dia-proximo" class="btn-nav-dia">›</button>
+        </div>
 
         <ul id="lista-todas-tarefas" class="lista-tarefas"></ul>
       </div>
