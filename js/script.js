@@ -1,7 +1,7 @@
-
 const CHAVE_TOKEN = "nexo_token";
 const CHAVE_USUARIO = "nexo_usuario";
 const CHAVE_BANCO = "nexo_banco_local";
+const CHAVE_PREFS_LEMBRETES = "nexo_prefs_lembretes";
 
 // Cores usadas só para desenhar categorias/prioridades no front
 const CORES = {
@@ -307,6 +307,7 @@ document.getElementById("btn-sair").addEventListener("click", sair);
 function sair() {
   localStorage.removeItem(CHAVE_TOKEN);
   localStorage.removeItem(CHAVE_USUARIO);
+  pararVerificacaoDeLembretes();
   mostrarTela("tela-login");
 }
 
@@ -314,6 +315,9 @@ async function entrarNoApp(nome) {
   document.getElementById("perfil-nome").value = nome;
   document.getElementById("saudacao").textContent = "Olá, " + nome.split(" ")[0] + "!";
   mostrarTela("tela-app");
+  aplicarPrefsNosCheckboxes(carregarPrefsLembretes());
+  atualizarStatusNotificacao();
+  iniciarVerificacaoDeLembretes();
   await atualizarTudo();
 }
 
@@ -549,6 +553,148 @@ async function renderizarDashboard() {
   } catch (erro) {
     lista.innerHTML = `<p class="texto-suave">${escaparTexto(erro.message)}</p>`;
   }
+}
+
+/* --------------------------------------------------- */
+/* LEMBRETES / NOTIFICAÇÕES DO NAVEGADOR                 */
+/* --------------------------------------------------- */
+
+// Guarda quais lembretes já foram disparados nesta sessão,
+// pra não notificar a mesma tarefa/offset várias vezes.
+const lembretesJaEnviados = new Set();
+let intervaloLembretes = null;
+
+function carregarPrefsLembretes() {
+  const bruto = localStorage.getItem(CHAVE_PREFS_LEMBRETES);
+  const padrao = {
+    min10: true,
+    hora1: false,
+    noHorario: true,
+    push: true,
+    email: false,
+  };
+  if (!bruto) return padrao;
+  return { ...padrao, ...JSON.parse(bruto) };
+}
+
+function salvarPrefsLembretes(prefs) {
+  localStorage.setItem(CHAVE_PREFS_LEMBRETES, JSON.stringify(prefs));
+}
+
+function lerPrefsDosCheckboxes() {
+  return {
+    min10: document.getElementById("notif-10min").checked,
+    hora1: document.getElementById("notif-1h").checked,
+    noHorario: document.getElementById("notif-horario").checked,
+    push: document.getElementById("notif-push").checked,
+    email: document.getElementById("notif-email").checked,
+  };
+}
+
+function aplicarPrefsNosCheckboxes(prefs) {
+  document.getElementById("notif-10min").checked = prefs.min10;
+  document.getElementById("notif-1h").checked = prefs.hora1;
+  document.getElementById("notif-horario").checked = prefs.noHorario;
+  document.getElementById("notif-push").checked = prefs.push;
+  document.getElementById("notif-email").checked = prefs.email;
+}
+
+// Salva a preferência sempre que o usuário mexe em qualquer checkbox da aba Lembretes
+["notif-10min", "notif-1h", "notif-horario", "notif-push", "notif-email"].forEach((id) => {
+  document.getElementById(id).addEventListener("change", () => {
+    salvarPrefsLembretes(lerPrefsDosCheckboxes());
+  });
+});
+
+function atualizarStatusNotificacao() {
+  const status = document.getElementById("status-notificacao");
+  const botao = document.getElementById("btn-ativar-notificacoes");
+
+  if (!("Notification" in window)) {
+    status.textContent = "Este navegador não suporta notificações.";
+    botao.classList.add("hidden");
+    return;
+  }
+
+  if (Notification.permission === "granted") {
+    status.textContent = "Notificações ativadas neste navegador.";
+    botao.classList.add("hidden");
+  } else if (Notification.permission === "denied") {
+    status.textContent = "Notificações bloqueadas. Ative manualmente nas configurações do navegador.";
+    botao.classList.add("hidden");
+  } else {
+    status.textContent = "Notificações ainda não ativadas.";
+    botao.classList.remove("hidden");
+  }
+}
+
+document.getElementById("btn-ativar-notificacoes").addEventListener("click", async () => {
+  if (!("Notification" in window)) return;
+  await Notification.requestPermission();
+  atualizarStatusNotificacao();
+});
+
+// Calcula os offsets (em minutos) que devem ser verificados, de acordo com as preferências
+function offsetsAtivos(prefs) {
+  const offsets = [];
+  if (prefs.min10) offsets.push({ minutos: 10, rotulo: "10min" });
+  if (prefs.hora1) offsets.push({ minutos: 60, rotulo: "1h" });
+  if (prefs.noHorario) offsets.push({ minutos: 0, rotulo: "horario" });
+  return offsets;
+}
+
+async function verificarLembretes() {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+  const prefs = carregarPrefsLembretes();
+  if (!prefs.push) return;
+
+  const offsets = offsetsAtivos(prefs);
+  if (offsets.length === 0) return;
+
+  const hoje = dataDeHoje();
+  const agora = new Date();
+
+  let tarefasHoje;
+  try {
+    tarefasHoje = await chamarApi(`/tarefas?data=${hoje}`);
+  } catch {
+    return; // sessão expirada ou erro de rede: apenas ignora este ciclo
+  }
+
+  tarefasHoje.forEach((tarefa) => {
+    if (tarefa.concluida) return;
+
+    const instanteTarefa = new Date(`${hoje}T${tarefa.hora}:00`);
+
+    offsets.forEach(({ minutos, rotulo }) => {
+      const instanteAlvo = new Date(instanteTarefa.getTime() - minutos * 60000);
+      const diferenca = agora - instanteAlvo;
+      const chave = `${tarefa.id}|${rotulo}|${hoje}`;
+
+      // Dispara se já passou do instante-alvo, dentro de uma janela de ~35s,
+      // e ainda não foi notificado nesta sessão.
+      if (diferenca >= 0 && diferenca < 35000 && !lembretesJaEnviados.has(chave)) {
+        lembretesJaEnviados.add(chave);
+        const corpo =
+          minutos === 0
+            ? `Agora, às ${tarefa.hora}`
+            : `Em ${minutos === 60 ? "1 hora" : minutos + " minutos"}, às ${tarefa.hora}`;
+        new Notification(tarefa.titulo, { body: corpo, icon: "/img/nexo-icone.png" });
+      }
+    });
+  });
+}
+
+function iniciarVerificacaoDeLembretes() {
+  if (intervaloLembretes) return;
+  verificarLembretes();
+  intervaloLembretes = setInterval(verificarLembretes, 30000);
+}
+
+function pararVerificacaoDeLembretes() {
+  clearInterval(intervaloLembretes);
+  intervaloLembretes = null;
 }
 
 /* --------------------------------------------------- */

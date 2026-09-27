@@ -186,6 +186,12 @@
         <h2>Lembretes</h2>
 
         <div class="cartao">
+          <p class="rotulo">Permissão do navegador</p>
+          <p class="texto-suave" id="status-notificacao">Verificando permissão…</p>
+          <button type="button" id="btn-ativar-notificacoes" class="btn btn-laranja">Ativar notificações</button>
+        </div>
+
+        <div class="cartao">
           <p class="rotulo">Quando notificar</p>
           <label class="linha-toggle">
             <span>10 minutos antes</span>
@@ -213,7 +219,7 @@
           </label>
         </div>
 
-        <p class="texto-suave">O envio real de lembretes será ativado quando o backend estiver conectado.</p>
+        <p class="texto-suave">As notificações push funcionam pelo navegador enquanto esta aba estiver aberta. O canal "E-mail" ainda depende de um backend para ser enviado de verdade.</p>
       </div>
 
       <!-- ABA: PERFIL -->
